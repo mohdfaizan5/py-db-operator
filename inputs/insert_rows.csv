@@ -1,0 +1,6 @@
+table,name,phone_no,address,dob
+employee,Kaif,90000100012,UP,1980-11-03
+
+## if no such data is found based on parameter then it should show ""
+## Dont hard code anywhere 
+## Take sql return message something like "8 rows in set (0.00 sec)"
