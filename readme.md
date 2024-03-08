@@ -28,3 +28,11 @@ mycursor.execute("CREATE DATABASE database_name")
 # You can execute sql queries here
 mycursor.execute("YOUR SQL QUERIES")
 ```
+
+https://g.co/gemini/share/a14478b1314a
+
+
+Todo's
+
+- [ ] Create detailed_design_document.md and explain all working with little technical details.
+- [ ] 

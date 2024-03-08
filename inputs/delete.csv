@@ -1,8 +1,2 @@
-name
-Sehwag
-
-## Deleting 
-## Dont hard code anywhere 
-## The first parameter should be, on what basis to delete it.
-## if no such data is found based on parameter then it should show  return message""
-## Take sql return message something like "8 rows in set (0.00 sec)"
+table,name
+employees,Sehwag 

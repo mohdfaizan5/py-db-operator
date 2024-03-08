@@ -1,7 +1,2 @@
 name,phone_no,address
 Sehwag,9000010005,delhi
-
-## Dont hard code anywhere 
-## The first parameter should be, on what basis to update it.
-## if no such data is found based on parameter then it should show ""
-## Take sql return message something like "8 rows in set (0.00 sec)"

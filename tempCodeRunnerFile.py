@@ -1,3 +1,1 @@
-def main(host, data):
-    host
-
+database
