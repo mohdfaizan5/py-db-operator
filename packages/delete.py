@@ -1,32 +1,37 @@
-from db_connection import DatabaseConnection
+import csv
 
+def delete(db_connection):
+    with db_connection as connection:
+        cursor = connection.cursor()
 
-def delete_row():
-  try:
+        try:
+            with open("inputs/delete_row.csv", "r") as file:
+                csv_reader = csv.reader(file)
+                headers = next(csv_reader)
+                table_name = headers[0]
+                target_column = headers[1]
+                
+                for row in csv_reader:
+                    print(row)
+                    table_name = row[0]
+                    target_value = row[1]
 
-    db_connection = DatabaseConnection("localhost", "your_username", "your_password", "your_database_name")
+                    # Construct dynamic query
+                    query = f"DELETE FROM {table_name} WHERE {target_column} = %s"
 
-    db = db_connection.connect()
+                    # Execute query with target value
+                    cursor.execute(query, [target_value])
+                    rows_deleted = cursor.rowcount
 
-    cursor = db.cursor()
-    column_name = input("Enter the column name for the deletion criteria: ")
-    value = input("Enter the value to identify the row to delete: ")
+                    if rows_deleted > 0:
+                        print(f"Deleted {rows_deleted} row(s) from {table_name}.")
+                    else:
+                        print(f"Target value not found in {table_name}.")
 
-    # Construct the DELETE query
-    delete_query = f"DELETE FROM employees WHERE {column_name} = %s"
+                db_connection.commit()
 
-    # Execute the delete query
-    cursor.execute(delete_query, (value,))
+        except Exception as error:
+            print(error)
 
-    # Commit the changes
-    db.commit()
-
-    # Check if rows were affected
-    rows_deleted = cursor.rowcount
-    if rows_deleted > 0:
-      print(f"Successfully deleted {rows_deleted} row(s).")
-    else:
-      print(f"No rows found matching the given criteria.")
-
-  except mysql.connector.Error as err:
-    print(f"Error deleting data: {err}")
+        finally:
+            cursor.close()

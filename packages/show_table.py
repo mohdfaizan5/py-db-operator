@@ -1,16 +1,21 @@
-from db_connection import DatabaseConnection
+import csv
 
-def show_table():
+def show_table(connection_instance):
 
-  db_connection = DatabaseConnection("localhost", "your_username", "your_password", "your_database_name")
+  with connection_instance as connection:
+    cursor = connection.cursor()
+ 
+    try:
+      with open("inputs/show_tables.csv", "r") as file:
+        csv_reader = csv.DictReader(file)
+        for row in csv_reader:
 
-  db = db_connection.connect()
+          
+          cursor.execute(f"SELECT * FROM {row["table_name"]}")
+          table_data = cursor.fetchall()
 
-  cursor = db.cursor()
+          for row in table_data:
+            print(row)
 
-
-  cursor.execute("SELECT * FROM employees")
-  employees = cursor.fetchall()
-
-  for employee in employees:
-    print(employee)
+    except Exception as err:
+      print(err)

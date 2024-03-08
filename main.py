@@ -1,34 +1,21 @@
-from packages.db_connection import DatabaseConnection
-from packages.insert import insert_data
-from packages.delete import delete_row
+from packages.db_connect import DatabaseConnection
+from packages.insert import insert
 from packages.show_table import show_table
-from packages.update import update_row
+from packages.update import update
+from packages.delete import delete
+from packages.get_connection_details import get_connection_details
 
-connection_details = {
-    "host":"localhost",
-    "user":"faizan",
-    "password":"root",
-    "database":"employee_database"
-}
-db_connection = DatabaseConnection(**connection_details)
+connection_details = get_connection_details()
+connection_instance = DatabaseConnection(**connection_details) # ignore the error
+
 
 ########### START HERE 👇👇👇 #########
 
-insert_data(db_connection)
+# insert(connection_instance)
+show_table(connection_instance)
+# update(connection_instance)
+# delete(connection_instance)
 
 
 
-
-
-
-
-
-
-
-
-
-# cursor = db_connection.cursor()
-
-# cursor.close()
-# db_connection.commit()
-# db_connection.close()
+# connection_instance.commit()

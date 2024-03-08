@@ -1,76 +1,46 @@
-from db_connection import DatabaseConnection
+import csv
 
+def update(db_connection):
+    with db_connection as connection:
+        cursor = connection.cursor()
 
+        try:
+            with open("inputs/update_rows.csv", "r") as file:
+                csv_reader = csv.reader(file)
 
-def update_row(table_name='employees'):
-  """
-  Updates multiple fields in a MySQL table based on user-provided information.
+                # Read headers (assuming the first row contains them)
+                headers = next(csv_reader)
+                target_column = headers[1]  # Assuming the second column is the target
+                update_columns = headers[2:]  # Update columns from the third column onwards
 
-  Args:
-      database_name (str): Name of the database containing the table.
-      table_name (str): Name of the table to update data in.
-      user (str): Username for accessing the MySQL database.
-      password (str): Password for accessing the MySQL database.
-      host (str, optional): Hostname or IP address of the MySQL server. Defaults to "localhost".
-  """
+                # Construct dynamic SET clause based on update columns
+                set_clause = ", ".join([f"{col} = %s" for col in update_columns])
 
-  db_connection = DatabaseConnection("localhost", "your_username", "your_password", "your_database_name")
+                print(headers, target_column, update_columns)
+                print(set_clause)
 
-  db = db_connection.connect()
+                # Iterate over data rows (skipping the header row)
+                for row in csv_reader:
+                    table_name = row[0]  # Now correctly access table name from each row
+                    print(table_name)
+                    # Construct and execute dynamic query
+                    query = f"UPDATE {table_name} SET {set_clause} WHERE {target_column} = %s"
+                    update_values = [value for value in row[1:]]  # Update values (excluding target)
+                    
+                    print(query, update_values + [row[1]])
 
-  cursor = db.cursor()
-  try:
+                    cursor.execute(query, update_values[1:] + [row[1]])  # Add target value after update values
+                    rows_affected = cursor.rowcount
 
+                    if rows_affected > 0:
+                        print(f"Updated {rows_affected} row(s) in {table_name}.")
+                    else:
+                        print(f"Target value not found in {table_name}.")
 
-    # Get user input for update details
-    condition_column = input("Enter the column name for the condition: ")
-    condition_value = input("Enter the value to filter the condition (e.g., 'John' for name): ")
+                db_connection.commit()
 
-    # Get user input for fields to update
-    fields_to_update = []
-    while True:
-      field = input("Enter the name of a field to update (or 'done' to finish): ")
-      if field.lower() == "done":
-        break
-      fields_to_update.append(field)
+        except Exception as error:
+            print(error)
 
-    # Construct the UPDATE query dynamically
-    placeholder_list = ", ".join(["%s"] * len(fields_to_update))
-    update_query = f"UPDATE {table_name} SET {', '.join(fields_to_update)} = {placeholder_list} WHERE {condition_column} = %s"
-
-    # Get user input for new values
-    values = []
-    for field in fields_to_update:
-      new_value = input(f"Enter the new value for '{field}': ")
-      values.append(new_value)
-
-    # Execute the update query with all user-provided values
-    cursor.execute(update_query, values + [condition_value])
-
-    # Commit the changes
-    db.commit()
-
-    print(f"Successfully updated {', '.join(fields_to_update)} in {table_name} based on the specified condition.")
-
-  except mysql.connector.Error as err:
-    print(f"Error updating data: {err}")
-
-
-
-
-# def update_row_by_name():
-#       with open("./inputs/update_rows.csv", 'r') as file:
-#         reader = csv.reader(file)
-#         next(reader, None)  # Skip the header row again
-
-#         update_query = f"UPDATE employees SET phone_no = %s, address = %s, dob= %s WHERE name = %s"
-
-#         # Read data from CSV file and update rows
-#         with open("./inputs/update_rows.csv", 'r') as file:
-#           reader = csv.DictReader(file)
-#           for row in reader:
-#             # Execute the update query with values from the CSV row
-#             cursor.execute(update_query, (row['phone_no'], row['address']), row['dob'], row['name'])
-
-#       # Commit the changes
-#       db.commit()
+        finally:
+            cursor.close()
