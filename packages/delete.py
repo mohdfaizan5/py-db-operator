@@ -11,24 +11,31 @@ def delete(db_connection):
                 table_name = headers[0]
                 target_column = headers[1]
                 
+                visited = False
+
                 for row in csv_reader:
-                    print(row)
+                    visited = True
                     table_name = row[0]
                     target_value = row[1]
 
-                    # Construct dynamic query
-                    query = f"DELETE FROM {table_name} WHERE {target_column} = %s"
+                    # Construct dynamic query with BINARY keyword for case-insensitive comparison
+                    query = f"DELETE FROM {table_name} WHERE BINARY {target_column} = %s"
 
-                    # Execute query with target value
-                    cursor.execute(query, [target_value])
+                    # Execute query with parameter binding
+                    cursor.execute(query, (target_value,))  # Tuple with target value
+
                     rows_deleted = cursor.rowcount
 
                     if rows_deleted > 0:
                         print(f"Deleted {rows_deleted} row(s) from {table_name}.")
                     else:
-                        print(f"Target value not found in {table_name}.")
+                        print(f"Target value ({target_value}) not found in {table_name} to delete.")
 
-                db_connection.commit()
+                if(not visited):
+                    print("No input data mentioned to delete.")
+                    return  # Exit the function if no tables are specified
+
+            connection.commit()
 
         except Exception as error:
             print(error)

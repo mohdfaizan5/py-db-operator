@@ -1,2 +1,8 @@
-table_name,name,phone_no,address,dob
-employees,Dikshit,90000100013,JK,1980-12-03
+table_name,id,name,phone_no,address,dob
+users,1004,King,0,HYD,1999-12-10
+
+
+
+
+
+
