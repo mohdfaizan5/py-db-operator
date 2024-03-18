@@ -8,46 +8,97 @@ def insert(db_connection):
    
         try:
             with open("inputs/insert_rows.csv", "r") as file:
+                
+                
+                
+                # csv_reader = csv.DictReader(file)
+                # # print(type(csv_reader))
+                
+                # for i in csv_reader:
+                #     # print(i)
+                    
+                #     table_name = i.get("table_name") or i.get("table")
+                #     print(table_name)
+                #     # [todo] Check if table_name or table not specified as first then throw error 
+                    
+
+                #     column_names = list(i.keys())[1:]
+                #     row_values = list(i.values())[1:]
+                #     print(column_names, row_values)
+                    
+                #     placeholders = ", ".join(["%s"] * len(column_names))
+                #     # print(placeholders)
+                #     # print(", ".join(column_names))
+                #     # print(table_name)
+                    
+                #     query = f"INSERT INTO {table_name} ({', '.join(column_names)}) VALUES ({placeholders})"
+                    
+                #     # print(query)
+                #     # print(row_values)
+                    
+                #     values = fill_empty_values_with_defaults(cursor, table_name, column_names)
+                    
+                #     print(values)
+                #     # cursor.execute(query, row_values)
+                
+                
+                # reading csv file 
                 csv_reader = csv.reader(file, skipinitialspace=True, quotechar='"')
                 headers = next(csv_reader) 
-                print(headers)
+                print("\n\n",headers)
                 
                 for row in csv_reader:
                     if row:  # Skip empty lines
                         try:
                             table_name = row[0]
+                            row_values = row[1:]
+                            column_names = headers
 
-                            print("\n\n" , row)
-                            # Handle missing values
-                            values = fill_empty_values_with_defaults(cursor, table_name, row[1:])
-                            print(values)
+                            print("" , row)
 
                             # Validate date format
-                            date_values = [value for value in values if isinstance(value, str) and "-" in value]
-                            for date_value in date_values:
-                                try:
-                                    datetime.datetime.strptime(date_value, "%Y-%m-%d")
-                                except ValueError:
-                                    raise ValueError(f"Invalid date format: '{date_value}'. Please use YYYY-MM-DD.")
+                            # date_values = [value for value in values if isinstance(value, str) and "-" in value]
+                            # for date_value in date_values:
+                            #     try:
+                            #         datetime.datetime.strptime(date_value, "%Y-%m-%d")
+                            #     except ValueError:
+                            #         raise ValueError(f"Invalid date format: '{date_value}'. Please use YYYY-MM-DD.")
 
 
-                            # Get database columns and adjust placeholders
+                            # Get database columns
                             db_columns = get_database_columns(cursor, table_name)
-                            print(db_columns)
+                            # print(db_columns)
                             
+                            # adding missing columns
+                            missing_columns = set(db_columns) - set(column_names)
+                            no_of_missing_colums = len(missing_columns)
+                            
+                            if(missing_columns):
+                                column_names.extend(missing_columns)
+                                row_values.extend([""] * no_of_missing_colums)
+                                
+                            # Handle default missing values
+                            values = fill_empty_values_with_defaults(cursor, table_name, column_names[1:], row_values)
+                            print("✅",column_names[1:])
+                            print("✅",values)
+
+                            
+                            # adjust placeholders
                             placeholders = ", ".join(["%s"] * len(db_columns))
                             print(placeholders)
+                            
+                            
 
                             # Ensure enough placeholders for all columns
-                            if len(values) < len(db_columns):
-                                values.extend(["EMPTY"] * (len(db_columns) - len(values)))  # Add missing values
-                            print(values)
+                            # if len(values) < len(db_columns):
+                            #     values.extend(["EMPTY"] * (len(db_columns) - len(values)))  # Add missing values
+                            # print(values)
 
-                            query = f"INSERT INTO {table_name} ({', '.join(db_columns)}) VALUES ({placeholders})"
+                            query = f"INSERT INTO {table_name} ({', '.join(column_names[1:])}) VALUES ({placeholders})"
                             print(query)
 
+                            print(row_values)
                             # return
-                            # return``
                             cursor.execute(query, values)
 
                         except ValueError as e:
@@ -79,13 +130,16 @@ def insert(db_connection):
 
 
 
-def fill_empty_values_with_defaults(cursor, table_name, values):
-    """Fills empty values in a row with appropriate defaults based on column data types."""
-    db_columns = get_database_columns(cursor, table_name)
+def fill_empty_values_with_defaults(cursor, table_name, headers, values):
+    """Fills empty values in a row with appropriate defaults based on column data types.
+    cursor, employees, ['1004', '', '0', '', '']
+    """
+    # db_columns = get_database_columns(cursor, table_name)
 
     for i, value in enumerate(values):
         if not value:  # Empty value
-            column_type = get_column_type(cursor, table_name, db_columns[i])
+            column_type = get_column_type(cursor, table_name, headers[i])
+            print(f"found {headers[i]} as null👀👀 and its column type is {column_type}")
             if column_type in ["int", "tinyint", "smallint", "mediumint", "bigint"]:
                 values[i] = 0
             elif column_type in ["varchar", "char", "text"]:

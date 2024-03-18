@@ -1,8 +1,5 @@
-table_name,id,name,phone_no,address,dob
-users,1004,King,0,HYD,1999-12-10
-
-
-
+table_name,id,name,phone_no,dob,address
+employees,1004,King,0,,laskfjd
 
 
 
